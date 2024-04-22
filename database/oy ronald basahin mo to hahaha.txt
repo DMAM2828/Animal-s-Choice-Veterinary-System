@@ -1,0 +1,2 @@
+Pare gawa ka database na pangalan ovas_db tas import mo yan ovas_db.slq don naka (collation) ah pre tas gawa ka sa appointment_list ng table na appointment_time,doctor_id,booked_times tas sa users na table gawa ka uli ng doctor_id bale gayahin mo yun id nung gagawin mong doctor sa users may id don input lang if ano number ng id nila tas ayon g na yan
+
