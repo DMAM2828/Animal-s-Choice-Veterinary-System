@@ -1,0 +1,181 @@
+<div class="col-12">
+    <div class="row my-5 ">
+        <div class="col-md-5">
+            <div class="card card-outline card-navy rounded-0 shadow">
+                <div class="card-header">
+                    <h4 class="card-title">Contact Information</h4>
+                </div>
+                <div class="card-body rounded-0">
+                    <dl>
+                        <dt class="text-muted"><i class="fa fa-envelope"></i> Email</dt>
+                        <dd class="pl-4"><?= $_settings->info('email') ?></dd>
+                        <dt class="text-muted"><i class="fa fa-phone"></i> Contact #</dt>
+                        <dd class="pl-4"><?= $_settings->info('contact') ?></dd>
+                        <dt class="text-muted"><i class="fa fa-map-marked-alt"></i> Location</dt>
+                        <dd class="pl-4"><?= $_settings->info('address') ?></dd>
+                        <dt class="text-muted"><i class="fa fa-clock"></i> Daily Schedule</dt>
+                        <dd class="pl-4"><?= $_settings->info('clinic_schedule') ?></dd>
+                        <dt class="text-muted"><i class="fa fa-paw"></i> Maximum Daily Appointments</dt>
+                        <dd class="pl-4"><?= $_settings->info('max_appointment') ?></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="card rounded-0 card-outline card-navy shadow" >
+                <div class="card-body rounded-0">
+                    <h2 class="text-center">Message Us</h2>
+                    <center><hr class="bg-navy border-navy w-25 border-2"></center>
+                    <?php if($_settings->chk_flashdata('pop_msg')): ?>
+                        <div class="alert alert-success">
+                            <i class="fa fa-check mr-2"></i> <?= $_settings->flashdata('pop_msg') ?>
+                        </div>
+                        <script>
+                            $(function(){
+                                $('html, body').animate({scrollTop:0})
+                            })
+                        </script>
+                    <?php endif; ?>
+                    <form action="" id="message-form">
+                        <input type="hidden" name="id">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control form-control-sm form-control-border" id="fullname" name="fullname" required placeholder="Juan Dela Cruz">
+                                <small class="px-3 text-muted">Full Name</small>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control form-control-sm form-control-border" id="contact" name="contact" required placeholder="098172312312">
+                                <small class="px-3 text-muted">Contact #</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="email" class="form-control form-control-sm form-control-border" id="email" name="email" required placeholder="juandelacruz@gmail.com">
+                                <small class="px-3 text-muted">Email</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-md-12">
+                                <small class="text-muted">Message</small>
+                                <textarea name="message" id="message" rows="4" class="form-control form-control-sm rounded-0" required placeholder="Write your message here"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-md-12 text-center">
+                                <button class="btn btn-primary rounded-pill col-5">Send Message</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(function () {
+        $('#message-form').submit(function (e) {
+            e.preventDefault();
+            var _this = $(this);
+            $('.pop-msg').remove();
+            var el = $('<div>');
+            el.addClass("pop-msg alert");
+            el.hide();
+
+            // Validation
+            var fullname = $('#fullname').val().trim();
+            var contact = $('#contact').val().trim();
+            var email = $('#email').val().trim();
+            var message = $('#message').val().trim();
+
+            if (fullname === '' || contact === '' || email === '' || message === '') {
+                el.addClass("alert-danger");
+                el.text("All fields are required.");
+                _this.prepend(el);
+                el.show('slow');
+                $('html, body').animate({ scrollTop: 0 }, 'fast');
+                return;
+            }
+
+            // Check if fullname contains numeric characters
+            if (/\d/.test(fullname)) {
+                el.addClass("alert-danger");
+                el.text("Full name should not contain numeric characters.");
+                _this.prepend(el);
+                el.show('slow');
+                $('html, body').animate({ scrollTop: 0 }, 'fast');
+                return;
+            }
+
+            var nameParts = fullname.split(' ');
+
+            // Check if there are at least two name parts (first name and last name)
+            if (nameParts.length < 2) {
+                el.addClass("alert-danger");
+                el.text("Please enter a valid full name with at least a first and last name.");
+                _this.prepend(el);
+                el.show('slow');
+                $('html, body').animate({ scrollTop: 0 }, 'fast');
+                return;
+            }
+
+            // Email format validation
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(email)) {
+                el.addClass("alert-danger");
+                el.text("Please enter a valid email address with @gmail.com extension.");
+                _this.prepend(el);
+                el.show('slow');
+                $('html, body').animate({ scrollTop: 0 }, 'fast');
+                return;
+            }
+
+            // Contact number format validation (11 digits)
+            var contactRegex = /^\d{11}$/;
+
+            if (!contactRegex.test(contact)) {
+                el.addClass("alert-danger");
+                el.text("Contact Number must contain exactly 11 numeric characters.");
+                _this.prepend(el);
+                el.show('slow');
+                $('html, body').animate({ scrollTop: 0 }, 'fast');
+                return;
+            }
+
+            start_loader();
+            $.ajax({
+                url: _base_url_ + "classes/Master.php?f=save_message",
+                data: new FormData($(this)[0]),
+                cache: false,
+                contentType: false,
+                processData: false,
+                method: 'POST',
+                type: 'POST',
+                dataType: 'json',
+                error: err => {
+                    console.log(err);
+                    alert_toast("An error occurred", 'error');
+                    end_loader();
+                },
+                success: function (resp) {
+                    if (resp.status == 'success') {
+                        location.reload();
+                    } else if (!!resp.msg) {
+                        el.addClass("alert-danger");
+                        el.text(resp.msg);
+                        _this.prepend(el);
+                    } else {
+                        el.addClass("alert-danger");
+                        el.text("An error occurred due to an unknown reason.");
+                        _this.prepend(el);
+                    }
+                    el.show('slow');
+                    $('html, body').animate({ scrollTop: 0 }, 'fast');
+                    end_loader();
+                }
+            });
+        });
+    });
+</script>
